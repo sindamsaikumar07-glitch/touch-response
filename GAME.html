@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Competition of Circle</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  height: 100vh;
+  color: white;
+  overflow: hidden;
+}
+
+/* CENTER LOGIN */
+#loginPage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  text-align: center;
+}
+
+.login-box {
+  width: 90%;
+  max-width: 350px;
+  padding: 30px;
+  border-radius: 30px;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(15px);
+  box-shadow: 0 0 20px rgba(0,255,255,0.3);
+}
+
+/* INPUT */
+input, select {
+  width: 90%;
+  padding: 12px;
+  margin: 10px;
+  border-radius: 20px;
+  border: none;
+  text-align: center;
+}
+
+/* BUTTON */
+button {
+  padding: 12px 25px;
+  border-radius: 30px;
+  border: none;
+  background: linear-gradient(45deg, #00f2fe, #4facfe);
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* GAME */
+#gamePage {
+  display: none;
+}
+
+#box {
+  width: 70px;
+  height: 70px;
+  position: absolute;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* SCORE */
+#scoreBoard {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  font-size: 16px;
+}
+
+/* RESULT */
+#resultPage {
+  display: none;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #00c853, #009624);
+  text-align: center;
+  padding-top: 80px;
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+.card {
+  width: 80%;
+  max-width: 250px;
+  padding: 20px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.2);
+}
+
+.score-value {
+  font-size: 40px;
+}
+
+.play-btn {
+  margin-top: 30px;
+  padding: 15px 25px;
+  border-radius: 30px;
+  border: none;
+  background: linear-gradient(45deg, #00c6ff, #0072ff);
+  color: white;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage">
+  <div class="login-box">
+    <h2>🎮 Competition of Circle</h2>
+
+    <input type="text" id="name" placeholder="Enter name"><br>
+    <input type="number" id="age" placeholder="Enter age"><br>
+
+    <select id="time">
+      <option value="">Select Time</option>
+      <option value="60">1 Minute</option>
+      <option value="120">2 Minutes</option>
+      <option value="180">3 Minutes</option>
+    </select><br>
+
+    <button onclick="startGame()">Start Game</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="gamePage">
+  <div id="scoreBoard">
+    <div id="player"></div>
+    Score: <span id="score">0</span><br>
+    Time: <span id="timer">0</span>
+  </div>
+
+  <div id="box"></div>
+</div>
+
+<!-- RESULT -->
+<div id="resultPage">
+  <h2>🎉 Thanks for Playing!</h2>
+
+  <div class="cards">
+    <div class="card">
+      Your Score
+      <div class="score-value" id="finalScore"></div>
+    </div>
+
+    <div class="card">
+      High Score
+      <div class="score-value" id="highScore"></div>
+    </div>
+  </div>
+
+  <button class="play-btn" onclick="restartGame()">🔄 Play Again</button>
+</div>
+
+<!-- 🔊 SOUND FILES -->
+<audio id="clickSound" src="https://www.soundjay.com/button/sounds/button-16.mp3"></audio>
+<audio id="endSound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"></audio>
+
+<script>
+let score = 0;
+let timeLeft;
+let timerInterval;
+const box = document.getElementById("box");
+
+/* START */
+function startGame() {
+  let name = document.getElementById("name").value;
+  let age = document.getElementById("age").value;
+  let time = document.getElementById("time").value;
+
+  if (name === "" || age === "" || time === "") {
+    alert("Enter all details");
+    return;
+  }
+
+  timeLeft = parseInt(time);
+
+  document.getElementById("loginPage").style.display = "none";
+  document.getElementById("gamePage").style.display = "block";
+
+  document.getElementById("player").innerText =
+    "Player: " + name + " (" + age + ")";
+
+  startTimer();
+  moveBox();
+  changeColor();
+}
+
+/* TIMER */
+function startTimer() {
+  document.getElementById("timer").innerText = timeLeft;
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    document.getElementById("timer").innerText = timeLeft;
+
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      endGame();
+    }
+  }, 1000);
+}
+
+/* END */
+function endGame() {
+  document.getElementById("endSound").play();
+
+  document.getElementById("gamePage").style.display = "none";
+  document.getElementById("resultPage").style.display = "block";
+
+  document.getElementById("finalScore").innerText = score;
+
+  let high = localStorage.getItem("highScore") || 0;
+
+  if (score > high) {
+    localStorage.setItem("highScore", score);
+    high = score;
+  }
+
+  document.getElementById("highScore").innerText = high;
+}
+
+/* PLAY AGAIN */
+function restartGame() {
+  score = 0;
+  document.getElementById("score").innerText = 0;
+
+  document.getElementById("resultPage").style.display = "none";
+  document.getElementById("gamePage").style.display = "block";
+
+  let time = document.getElementById("time").value;
+  timeLeft = parseInt(time);
+
+  startTimer();
+  moveBox();
+  changeColor();
+}
+
+/* MOVE */
+function moveBox() {
+  let x = Math.random() * (window.innerWidth - 70);
+  let y = Math.random() * (window.innerHeight - 70);
+  box.style.left = x + "px";
+  box.style.top = y + "px";
+}
+
+/* COLOR */
+function changeColor() {
+  let color = "#" + Math.floor(Math.random()*16777215).toString(16);
+  box.style.background = color;
+}
+
+/* CLICK (Mobile + Desktop) */
+function handleClick() {
+  document.getElementById("clickSound").play();
+  score++;
+  document.getElementById("score").innerText = score;
+  moveBox();
+  changeColor();
+}
+
+box.addEventListener("click", handleClick);
+box.addEventListener("touchstart", handleClick);
+</script>
+
+</body>
+</html>
